@@ -10,6 +10,7 @@ def return_tome(namefile):
             line = line.decode("utf_8")
             line = line.replace('\n', '')
             line = line.replace('\r', '')
+            line = line.replace(' ', '')
             line = line.split(',')
             if len(line) > 0:
                 if line[0] != "":
