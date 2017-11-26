@@ -68,8 +68,8 @@ def create_line_graph(graph):
                 line_graph.add_edge(nd, (ngbr2, extr2))
     return line_graph
 
-dico_ex = get_associations("data/1_2_3_4_5_correspondances.csv")
-matrix_ex = get_matrix("data/1_2_3_4_5_matrix.csv")
+dico_ex = get_associations("data/1_2_3_4_5_6_7_8_correspondances.csv")
+matrix_ex = get_matrix("data/1_2_3_4_5_6_7_8_matrix.csv")
 
 Ex_graph = nx.Graph()
 
