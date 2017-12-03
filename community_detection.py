@@ -2,7 +2,6 @@ from graphs import Graph_community
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import scipy as sp
 
 def spectral_clustering(line_graph, lap_param):
     W = nx.to_numpy_matrix(line_graph)

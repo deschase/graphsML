@@ -30,8 +30,6 @@ def create_line_graph(graph):
 
 
 
-draw_graph(Ex_graph)
-draw_graph(create_line_graph(Ex_graph))
 
 # gr2 = create_line_graph(gr1)
 # draw_graph(gr2)
