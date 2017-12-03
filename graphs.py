@@ -1,234 +1,115 @@
-""" A Python Class
-A simple Python graph class, demonstrating the essential
-facts and functionalities of graphs.
-source https://www.python-course.eu/graphs_python.php
-"""
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
 
-class Graph(object):
+def get_associations(namefile):
+    dico = {}
+    with open(namefile, "rb") as f:
+        list_lines = f.readlines()
 
-    def __init__(self, graph_dict=None):
-        """ initializes a graph object
-            If no dictionary or None is given, an empty dictionary will be used
-        """
-        if graph_dict == None:
-            graph_dict = {}
-        self.__graph_dict = graph_dict
+        for line in list_lines:
+            line = line.decode("utf_8")
+            line = line.replace('\n', '')
+            line = line.replace('\r', '')
+            line = line.split(',')
+            dico[int(line[1])] = str(line[0])
 
-
-    def vertices(self):
-        """ returns the vertices of a graph """
-        return list(self.__graph_dict.keys())
-
-    def edges(self):
-        """ returns the edges of a graph """
-        return self.__generate_edges()
-
-    def add_vertex(self, vertex):
-        """ If the vertex "vertex" is not in
-            self.__graph_dict, a key "vertex" with an empty
-            list as a value is added to the dictionary.
-            Otherwise nothing has to be done.
-        """
-        if vertex not in self.__graph_dict:
-            self.__graph_dict[vertex] = []
-
-    def add_edge(self, edge):
-        """ assumes that edge is of type set, tuple or list;
-            between two vertices can be multiple edges!
-        """
-        edge = set(edge)
-        vertex1 = edge.pop()
-        if edge:
-            # not a loop
-            vertex2 = edge.pop()
-        else:
-            # a loop
-            vertex2 = vertex1
-        if vertex1 in self.__graph_dict:
-            self.__graph_dict[vertex1].append(vertex2)
-        else:
-            self.__graph_dict[vertex1] = [vertex2]
-
-    def __generate_edges(self):
-        """ A static method generating the edges of the
-            graph "graph". Edges are represented as sets
-            with one (a loop back to the vertex) or two
-            vertices
-        """
-        edges = []
-        for vertex in self.__graph_dict:
-            for neighbour in self.__graph_dict[vertex]:
-                if {neighbour, vertex} not in edges:
-                    edges.append({vertex, neighbour})
-        return edges
-
-    def __str__(self):
-        res = "vertices: "
-        for k in self.__graph_dict:
-            res += str(k) + " "
-        res += "\nedges: "
-        for edge in self.__generate_edges():
-            res += str(edge) + " "
-        return res
-
-    def find_isolated_vertices(self):
-        """ returns a list of isolated vertices. """
-        graph = self.__graph_dict
-        isolated = []
-        for vertex in graph:
-            print(isolated, vertex)
-            if not graph[vertex]:
-                isolated += [vertex]
-        return isolated
-
-    def find_path(self, start_vertex, end_vertex, path=[]):
-        """ find a path from start_vertex to end_vertex
-            in graph """
-        graph = self.__graph_dict
-        path = path + [start_vertex]
-        if start_vertex == end_vertex:
-            return path
-        if start_vertex not in graph:
-            return None
-        for vertex in graph[start_vertex]:
-            if vertex not in path:
-                extended_path = self.find_path(vertex,
-                                               end_vertex,
-                                               path)
-                if extended_path:
-                    return extended_path
-        return None
+    return dico
 
 
-    def find_all_paths(self, start_vertex, end_vertex, path=[]):
-        """ find all paths from start_vertex to
-            end_vertex in graph """
-        graph = self.__graph_dict
-        path = path + [start_vertex]
-        if start_vertex == end_vertex:
-            return [path]
-        if start_vertex not in graph:
-            return []
-        paths = []
-        for vertex in graph[start_vertex]:
-            if vertex not in path:
-                extended_paths = self.find_all_paths(vertex,
-                                                     end_vertex,
-                                                     path)
-                for p in extended_paths:
-                    paths.append(p)
-        return paths
+def get_matrix(namefile):
+    matrix = list()
+    with open(namefile, "rb") as f:
+        list_lines = f.readlines()
 
-    def is_connected(self,
-                     vertices_encountered = None,
-                     start_vertex=None):
-        """ determines if the graph is connected """
-        if vertices_encountered is None:
-            vertices_encountered = set()
-        gdict = self.__graph_dict
-        vertices = list(gdict.keys()) # "list" necessary in Python 3
-        if not start_vertex:
-            # chosse a vertex from graph as a starting point
-            start_vertex = vertices[0]
-        vertices_encountered.add(start_vertex)
-        if len(vertices_encountered) != len(vertices):
-            for vertex in gdict[start_vertex]:
-                if vertex not in vertices_encountered:
-                    if self.is_connected(vertices_encountered, vertex):
-                        return True
-        else:
-            return True
-        return False
+        for line in list_lines:
+            line = line.decode("utf_8")
+            line = line.replace('\n', '')
+            line = line.replace('\r', '')
+            line = line.split(',')
+            matrix.append([int(elem) for elem in line])
 
-    def vertex_degree(self, vertex):
-        """ The degree of a vertex is the number of edges connecting
-            it, i.e. the number of adjacent vertices. Loops are counted
-            double, i.e. every occurence of vertex in the list
-            of adjacent vertices. """
-        adj_vertices =  self.__graph_dict[vertex]
-        degree = len(adj_vertices) + adj_vertices.count(vertex)
-        return degree
+    return matrix
 
-    def degree_sequence(self):
-        """ calculates the degree sequence """
-        seq = []
-        for vertex in self.__graph_dict:
-            seq.append(self.vertex_degree(vertex))
-        seq.sort(reverse=True)
-        return tuple(seq)
+class Graph_community(object):
+    def __init__(self, tomes):
+        nam = str(tomes[0])
+        for t in tomes[1:len(tomes)]:
+            nam += "_" + str(t)
 
-    @staticmethod
-    def is_degree_sequence(sequence):
-        """ Method returns True, if the sequence "sequence" is a
-            degree sequence, i.e. a non-increasing sequence.
-            Otherwise False is returned.
-        """
-        # check if the sequence sequence is non-increasing:
-        return all( x>=y for x, y in zip(sequence, sequence[1:]))
+        self.dico = get_matrix("data/" + nam + "_correspondances.csv")
+        self.matrix = np.asarray(get_associations("data/" + nam + "_matrix.csv"))
+        self.graph = nx.Graph()
 
+        for name in self.dico.values():
+            self.graph.add_node(name)
 
-    def delta(self):
-        """ the minimum degree of the vertices """
-        min = 100000000
-        for vertex in self.__graph_dict:
-            vertex_degree = self.vertex_degree(vertex)
-            if vertex_degree < min:
-                min = vertex_degree
-        return min
+        for i in self.dico.keys():
+            for j in self.dico.keys():
+                if j < i and self.matrix[i][j] != 0:
+                    self.graph.add_edge(self.dico[i], self.dico[j], weight=self.matrix[i, j])
 
-    def Delta(self):
-        """ the maximum degree of the vertices """
-        max = 0
-        for vertex in self.__graph_dict:
-            vertex_degree = self.vertex_degree(vertex)
-            if vertex_degree > max:
-                max = vertex_degree
-        return max
+        self.D = nx.Graph() # Line graph that corresponds to the graph, no consideration of the weight of the original graph
+        self.E = nx.DiGraph() # Idem but with consideration of the weight
 
-    def density(self):
-        """ method to calculate the density of a graph """
-        g = self.__graph_dict
-        V = len(g.keys())
-        E = len(self.edges())
-        return 2.0 * E / (V *(V - 1))
+    def draw_graph(self):
+        """ This function is going to draw the original graph """
+        graph_pos = nx.spring_layout(self.graph)
 
-    def diameter(self):
-        """ calculates the diameter of the graph """
+        # draw nodes, edges and labels
+        nx.draw_networkx_nodes(self.graph, graph_pos, node_size=100, node_color='orange', alpha=0.3)
+        # we can now added edge thickness and edge color
+        nx.draw_networkx_edges(self.graph, graph_pos, width=1, alpha=0.3, edge_color='blue')
+        nx.draw_networkx_labels(self.graph, graph_pos, font_size=6, font_family='sans-serif')
 
-        v = self.vertices()
-        pairs = [ (v[i],v[j]) for i in range(len(v)) for j in range(i+1, len(v)-1)]
-        smallest_paths = []
-        for (s,e) in pairs:
-            paths = self.find_all_paths(s,e)
-            smallest = sorted(paths, key=len)[0]
-            smallest_paths.append(smallest)
+        # show graph
+        plt.show()
 
-        smallest_paths.sort(key=len)
+    def compute_E(self):
+        "To complete : add direction"
+        list_edges = list(self.graph.edges)
+        for link in list_edges:
+            if link[0] != link[1]: # check not self loop
+                self.E.add_node(link)
+        lg_node = list(self.E.nodes)
+        for nd in lg_node:
+            extr1 = nd[0]
+            extr2 = nd[1]
 
-        # longest path is at the end of list,
-        # i.e. diameter corresponds to the length of this path
-        diameter = len(smallest_paths[-1]) - 1
-        return diameter
+            for ngbr1 in self.graph.neighbors(extr1):
+                if (extr1, ngbr1) in lg_node:
+                    self.E.add_edge(nd, (extr1, ngbr1))
+                elif (ngbr1, extr1) in lg_node:
+                    self.E.add_edge(nd, (ngbr1, extr1))
+            for ngbr2 in self.graph.neighbors(extr2):
+                if (extr2, ngbr2) in lg_node:
+                    self.E.add_edge(nd, (extr2, ngbr2))
+                elif (ngbr2, extr2) in lg_node:
+                    self.E.add_edge(nd, (ngbr2, extr2))
 
-    @staticmethod
-    def erdoes_gallai(dsequence):
-        """ Checks if the condition of the Erdoes-Gallai inequality
-            is fullfilled
-        """
-        if sum(dsequence) % 2:
-            # sum of sequence is odd
-            return False
-        if Graph.is_degree_sequence(dsequence):
-            for k in range(1,len(dsequence) + 1):
-                left = sum(dsequence[:k])
-                right =  k * (k-1) + sum([min(x,k) for x in dsequence[k:]])
-                if left > right:
-                    return False
-        else:
-            # sequence is increasing
-            return False
-        return True
+    def compute_D(self):
+        list_edges = list(self.graph.edges)
 
-    def create_line_graph(self):
-        """ We create the line graph associated with the given graph
-        """
+        for link in list_edges:
+            if link[0] != link[1]: # check not self loop
+                self.D.add_node(link)
+
+        lg_node = list(self.D.nodes)
+
+        for nd in lg_node:
+            extr1 = nd[0]
+            extr2 = nd[1]
+            k1 = len(self.graph.neighbors(extr1))
+            k2 = len(self.graph.neighbors(extr2))
+
+            for ngbr1 in self.graph.neighbors(extr1):
+                if (extr1, ngbr1) in lg_node:
+                    self.D.add_edge(nd, (extr1, ngbr1), weight = 1./(k1 -1) )
+                elif (ngbr1, extr1) in lg_node:
+                    self.D.add_edge(nd, (ngbr1, extr1), weight = 1./(k1 -1))
+
+            for ngbr2 in self.graph.neighbors(extr2):
+                if (extr2, ngbr2) in lg_node:
+                    self.D.add_edge(nd, (extr2, ngbr2), weight = 1./(k2 -1))
+                elif (ngbr2, extr2) in lg_node:
+                    self.D.add_edge(nd, (ngbr2, extr2), weight = 1./(k2 -1))
