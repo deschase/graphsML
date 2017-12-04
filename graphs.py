@@ -37,8 +37,8 @@ class Graph_community(object):
         for t in tomes[1:len(tomes)]:
             nam += "_" + str(t)
 
-        self.dico = get_matrix("data/" + nam + "_correspondances.csv")
-        self.matrix = np.asarray(get_associations("data/" + nam + "_matrix.csv"))
+        self.dico = get_associations("data/" + nam + "_correspondances.csv")
+        self.matrix = np.asarray(get_matrix("data/" + nam + "_matrix.csv"))
         self.graph = nx.Graph()
 
         for name in self.dico.values():
@@ -50,6 +50,7 @@ class Graph_community(object):
                     self.graph.add_edge(self.dico[i], self.dico[j], weight=self.matrix[i, j])
 
         self.D = nx.Graph() # Line graph that corresponds to the graph, no consideration of the weight of the original graph
+        self.Dlist = []
         self.E = nx.DiGraph() # Idem but with consideration of the weight
 
     def draw_graph(self):
@@ -93,23 +94,36 @@ class Graph_community(object):
         for link in list_edges:
             if link[0] != link[1]: # check not self loop
                 self.D.add_node(link)
+                self.Dlist.append(link)
 
         lg_node = list(self.D.nodes)
 
         for nd in lg_node:
             extr1 = nd[0]
             extr2 = nd[1]
-            k1 = len(self.graph.neighbors(extr1))
-            k2 = len(self.graph.neighbors(extr2))
+            k1 = len(list(self.graph.neighbors(extr1)))
+            k2 = len(list(self.graph.neighbors(extr2)))
+            if k1 != 1:
+                for ngbr1 in self.graph.neighbors(extr1):
+                    if (extr1, ngbr1) in lg_node:
+                        self.D.add_edge(nd, (extr1, ngbr1), weight = 1./(k1 -1) )
+                    elif (ngbr1, extr1) in lg_node:
+                        self.D.add_edge(nd, (ngbr1, extr1), weight = 1./(k1 -1))
+            if k2 != 1:
+                for ngbr2 in self.graph.neighbors(extr2):
+                    if (extr2, ngbr2) in lg_node:
+                        self.D.add_edge(nd, (extr2, ngbr2), weight = 1./(k2 -1))
+                    elif (ngbr2, extr2) in lg_node:
+                        self.D.add_edge(nd, (ngbr2, extr2), weight = 1./(k2 -1))
 
-            for ngbr1 in self.graph.neighbors(extr1):
-                if (extr1, ngbr1) in lg_node:
-                    self.D.add_edge(nd, (extr1, ngbr1), weight = 1./(k1 -1) )
-                elif (ngbr1, extr1) in lg_node:
-                    self.D.add_edge(nd, (ngbr1, extr1), weight = 1./(k1 -1))
+    def draw_graph_com(self, label, list_edge):
+        print label
+        """ This function is going to draw the original graph """
+        graph_pos = nx.spring_layout(self.graph)
 
-            for ngbr2 in self.graph.neighbors(extr2):
-                if (extr2, ngbr2) in lg_node:
-                    self.D.add_edge(nd, (extr2, ngbr2), weight = 1./(k2 -1))
-                elif (ngbr2, extr2) in lg_node:
-                    self.D.add_edge(nd, (ngbr2, extr2), weight = 1./(k2 -1))
+        # draw nodes, edges and labels
+        nx.draw_networkx_nodes(self.graph, graph_pos, node_size=100, node_color='orange', alpha=0.3)
+        # we can now added edge thickness and edge color
+        nx.draw_networkx_edges(self.graph, graph_pos, edgelist= list_edge, width=1, alpha=0.3, edge_color=label)
+        nx.draw_networkx_labels(self.graph, graph_pos, font_size=10, font_family='sans-serif')
+        plt.show()
