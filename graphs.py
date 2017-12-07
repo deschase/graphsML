@@ -116,14 +116,40 @@ class Graph_community(object):
                     elif (ngbr2, extr2) in lg_node:
                         self.D.add_edge(nd, (ngbr2, extr2), weight = 1./(k2 -1))
 
-    def draw_graph_com(self, label, list_edge):
-        print label
-        """ This function is going to draw the original graph """
-        graph_pos = nx.spring_layout(self.graph)
+    def return_total_weight(self, D, E):
+        weight = 0
+        if E:
+            list_edges = list(self.E.edges)
+            for e in list_edges:
+                weight +=self.E[e]["weight"]
+        elif D:
+            list_edges = list(self.D.edges)
+            for e in list_edges:
+                weight +=self.D[e]["weight"]
+        else:
+            list_edges = list(self.graph.edges)
+            for e in list_edges:
+                weight +=self.graph[e]["weight"]
+        return weight
 
-        # draw nodes, edges and labels
-        nx.draw_networkx_nodes(self.graph, graph_pos, node_size=100, node_color='orange', alpha=0.3)
-        # we can now added edge thickness and edge color
-        nx.draw_networkx_edges(self.graph, graph_pos, edgelist= list_edge, width=1, alpha=0.3, edge_color=label)
-        nx.draw_networkx_labels(self.graph, graph_pos, font_size=10, font_family='sans-serif')
-        plt.show()
+
+
+    def draw_graph_com(self, label, list_edge):
+        colors = ['b', 'r', 'yellow', 'green', 'purple', 'black', 'orange', 'magenta', 'grey', 'cyan', 'pink']
+        """ This function is going to draw the original graph but with the community color obtained on it """
+        graph_pos = nx.spring_layout(self.graph)
+        dico = dict()
+        # We get the different edge with their label to draw them separately
+        for i in range(len(label)):
+            if label[i] in dico.keys():
+                dico[label[i]].append(list_edge[i])
+            else:
+                dico[label[i]] = [list_edge[i]]
+
+        for j in dico.keys():
+            # draw nodes, edges and labels
+            nx.draw_networkx_nodes(self.graph, graph_pos, node_size=100, node_color='orange', alpha=0.3)
+            # we can now added edge thickness and edge color
+            nx.draw_networkx_edges(self.graph, graph_pos, edgelist= dico[j], width=2, alpha=0.6, edge_color=colors[j])
+            nx.draw_networkx_labels(self.graph, graph_pos, font_size=10, font_family='sans-serif')
+            plt.show()

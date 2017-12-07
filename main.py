@@ -38,5 +38,5 @@ def create_line_graph(graph):
 original= gr.Graph_community([1,2,3,4,5,6,7,8])
 original.draw_graph()
 original.compute_D()
-label = com.spectral_clustering(original.D, 'unn')
+label = com.spectral_clustering(original.D, 'rw')
 original.draw_graph_com( label, original.Dlist)

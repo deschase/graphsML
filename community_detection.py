@@ -37,3 +37,47 @@ def spectral_clustering(line_graph, lap_param):
     label = kmeans.labels_
     return label
 
+class Community_undirected(object):
+    def __init__(self):
+        self.nodes = [] # list of the nodes that belong to the community
+        self.inner_weight = 0 # the weights within the nodes of the community
+        self.weight_tot = 0 # weight of the edges incident to the vertexes of the community
+
+    def add_new_node(self, node, graph):
+        list_neigh = graph.neighbors(node)
+        for n in list_neigh:
+            if n in self.nodes:
+                self.inner_weight += graph[node][n]["weight"]
+            self.weight_tot += graph[node][n]["weight"]
+
+        self.nodes.append(node)
+
+    def get_weight_to_node(self, node, graph):
+        list_neigh = graph.neighbors(node)
+        inner_weight = 0
+        weight_tot = 0
+        for n in list_neigh:
+            if n in self.nodes:
+                inner_weight += graph[node][n]["weight"]
+            weight_tot += graph[node][n]["weight"]
+        return weight_tot, inner_weight
+
+    def get_weight_to_community(self, community, graph):
+        weight = 0
+        list_edges = list(graph.edges)
+        for n1 in self.nodes:
+            for n2 in community.nodes:
+                if (n1, n2) in list_edges:
+                    weight += graph[n1][n2]["weight"]
+        return weight
+
+
+class Stock_communities(object):
+    def __init__(self):
+        self.stock = []
+
+    def add_communities(self, list_com):
+        dico = dict()
+        for i in range(len(list_com)):
+            dico[i] = list_com[i]
+        self.stock.append(dico)
