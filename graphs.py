@@ -66,6 +66,7 @@ class Graph_community(object):
         # show graph
         plt.show()
 
+    # A debugger
     def compute_E(self):
         "To complete : add direction"
         list_edges = list(self.graph.edges)
@@ -73,20 +74,41 @@ class Graph_community(object):
             if link[0] != link[1]: # check not self loop
                 self.E.add_node(link)
         lg_node = list(self.E.nodes)
+
+        g2.node[2]['weight']
+
+        # Calculation of the strength of each node
+        s = dict{}
+        for pre_node in list(self.graph.nodes):
+            s[pre_node] = 0
+            for ngh in list(self.graph.neighbors(extr1))
+                s[pre_node] += self.graph[pre_node][ngh]['weight']
+
         for nd in lg_node:
             extr1 = nd[0]
             extr2 = nd[1]
+            k1 = len(list(self.graph.neighbors(extr1)))
+            k2 = len(list(self.graph.neighbors(extr2)))
+            wgt_alpha = self.graph[extr1][extr2]['weight']
 
             for ngbr1 in self.graph.neighbors(extr1):
                 if (extr1, ngbr1) in lg_node:
-                    self.E.add_edge(nd, (extr1, ngbr1))
+                    wgt_beta = self.graph[extr1][ngbr1]['weight']
+                    self.E.add_edge(nd, (extr1, ngbr1),
+                                    weight = wgt_alpha/(s[extr1] - wgt_beta))
                 elif (ngbr1, extr1) in lg_node:
-                    self.E.add_edge(nd, (ngbr1, extr1))
+                    wgt_beta = self.graph[ngbr1][extr1]['weight']
+                    self.E.add_edge(nd, (ngbr1, extr1),
+                                    weight = wgt_alpha/(s[extr1] - wgt_beta))
             for ngbr2 in self.graph.neighbors(extr2):
                 if (extr2, ngbr2) in lg_node:
-                    self.E.add_edge(nd, (extr2, ngbr2))
+                    wgt_beta = self.graph[extr2][ngbr2]['weight']
+                    self.E.add_edge(nd, (extr2, ngbr2),
+                                    weight = wgt_alpha/(s[extr2] - wgt_beta))
                 elif (ngbr2, extr2) in lg_node:
-                    self.E.add_edge(nd, (ngbr2, extr2))
+                    wgt_beta = self.graph[ngbr2][extr2]['weight']
+                    self.E.add_edge(nd, (ngbr2, extr2),
+                                    weight = wgt_alpha/(s[extr2] - wgt_beta))
 
     def compute_D(self):
         list_edges = list(self.graph.edges)
@@ -132,11 +154,10 @@ class Graph_community(object):
                 weight +=self.graph[e]["weight"]
         return weight
 
-
-
     def draw_graph_com(self, label, list_edge):
-        colors = ['b', 'r', 'yellow', 'green', 'purple', 'black', 'orange', 'magenta', 'grey', 'cyan', 'pink']
         """ This function is going to draw the original graph but with the community color obtained on it """
+
+        colors = ['b', 'r', 'yellow', 'green', 'purple', 'black', 'orange', 'magenta', 'grey', 'cyan', 'pink']
         graph_pos = nx.spring_layout(self.graph)
         dico = dict()
         # We get the different edge with their label to draw them separately

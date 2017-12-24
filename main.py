@@ -29,13 +29,11 @@ def create_line_graph(graph):
                 line_graph.add_edge(nd, (ngbr2, extr2))
     return line_graph
 
-
-
-
 # gr2 = create_line_graph(gr1)
 # draw_graph(gr2)
 
 original= gr.Graph_community([1,2,3,4,5,6,7,8])
+print(incidence_matrix(original))
 original.draw_graph()
 original.compute_D()
 label = com.spectral_clustering(original.D, 'rw')
