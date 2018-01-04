@@ -19,8 +19,12 @@ original.compute_E()
 #original.draw_graph_com(D = True, E = False)
 original.symmetrize_E()
 
-"""weight = list(original.E_sym.edges(data=True))
+"""
+weight = list(original.E_sym.edges(data=True))
 for w in weight:
-    print w"""
+    print w
+
+"""
 
 original.draw_graph_com(D = False, E = True)
+
