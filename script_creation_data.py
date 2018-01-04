@@ -28,7 +28,7 @@ if yes == "yes":
     while needToEnter:
         try:
             tome_number = int(raw_input("Enter the number of the volume you have in your hands :"))
-            if tome_number > 0 and tome_number < 21:
+            if tome_number > 0 and tome_number < 26:
                 needToEnter = False
             else:
                 print "Out of the desired ones"
@@ -63,8 +63,3 @@ if yes == "yes":
 
 else:
     print "BYYYYYYYE !"
-
-
-
-
-
