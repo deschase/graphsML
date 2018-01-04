@@ -12,7 +12,7 @@ import community_detection as com
 # gr2 = create_line_graph(gr1)
 # draw_graph(gr2)
 
-original= gr.Graph_community([1,2,3,4,5,6,7,8,9,10])
+original= gr.Graph_community([19,20,21])
 original.draw_graph()
 original.compute_D()
 original.compute_E()
