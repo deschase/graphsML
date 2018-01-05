@@ -233,7 +233,9 @@ class Graph_community(object):
 
     def draw_graph_com(self, D, E):
         """ This function is going to draw the original graph but with the community color obtained on it """
-        colors = ['blue', 'orange', 'purple', 'green', 'black', 'pink', 'brown', 'magenta', 'grey', 'cyan']
+        colors = ['blue', 'orange', 'purple', 'green', 'black', 'pink', 'brown',
+                  'magenta', 'grey', 'cyan', 'blue', 'orange', 'purple',
+                  'green', 'black', 'pink', 'brown', 'magenta', 'grey', 'cyan']
         # first compute the best partition
         if E:
             partition = community.best_partition(self.E_sym)  # louvain algo with weighted original graph (with a E symmetrised)
@@ -252,4 +254,3 @@ class Graph_community(object):
             nx.draw_networkx_labels(self.graph, pos, font_size=10, font_family='sans-serif')
             nx.draw_networkx_edges(self.graph, pos, edgelist=list_edges, alpha=1., width = list_weight, edge_color=colors[int(count)])
             plt.show()
-
