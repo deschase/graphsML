@@ -231,26 +231,39 @@ class Graph_community(object):
                     maxi = self.graph[e[0]][e[1]]["weight"]
         return weight, maxi
 
-    def draw_graph_com(self, D, E):
+    def draw_graph_com(self, D, E, com = []):
         """ This function is going to draw the original graph but with the community color obtained on it """
         colors = ['blue', 'orange', 'purple', 'green', 'black', 'pink', 'brown',
                   'magenta', 'grey', 'cyan', 'blue', 'orange', 'purple',
                   'green', 'black', 'pink', 'brown', 'magenta', 'grey', 'cyan']
-        # first compute the best partition
-        if E:
-            partition = community.best_partition(self.E_sym)  # louvain algo with weighted original graph (with a E symmetrised)
-        if D:
-            partition = community.best_partition(self.D) # louvain algo with unweighted original graph
-        w, maxi= self.return_total_and_max_weight()
-        # drawing : we draw each community one by one
-        size = float(len(set(partition.values())))
-        pos = nx.circular_layout(self.graph)
-        count = 0
-        for com in set(partition.values()):
-            count = count + 1.
-            list_edges = [edge for edge in partition.keys() if partition[edge] == com]
-            list_weight = [20.*float(self.graph[edge[0]][edge[1]]["weight"])/float(maxi) for edge in partition.keys() if partition[edge] == com]
-            nx.draw_networkx_nodes(self.graph, pos, node_size=150, node_color='orange', alpha=0.3)
-            nx.draw_networkx_labels(self.graph, pos, font_size=10, font_family='sans-serif')
-            nx.draw_networkx_edges(self.graph, pos, edgelist=list_edges, alpha=1., width = list_weight, edge_color=colors[int(count)])
-            plt.show()
+        if com==[]:
+            # first compute the best partition
+            if E:
+                partition = community.best_partition(self.E_sym)  # louvain algo with weighted original graph (with a E symmetrised)
+            if D:
+                partition = community.best_partition(self.D) # louvain algo with unweighted original graph
+            w, maxi= self.return_total_and_max_weight()
+            # drawing : we draw each community one by one
+            size = float(len(set(partition.values())))
+            pos = nx.circular_layout(self.graph)
+            count = 0
+            for com in set(partition.values()):
+                count = count + 1.
+                list_edges = [edge for edge in partition.keys() if partition[edge] == com]
+                list_weight = [20.*float(self.graph[edge[0]][edge[1]]["weight"])/float(maxi) for edge in partition.keys() if partition[edge] == com]
+                nx.draw_networkx_nodes(self.graph, pos, node_size=150, node_color='orange', alpha=0.3)
+                nx.draw_networkx_labels(self.graph, pos, font_size=10, font_family='sans-serif')
+                nx.draw_networkx_edges(self.graph, pos, edgelist=list_edges, alpha=1., width = list_weight, edge_color=colors[int(count)])
+                plt.show()
+        else:
+            w, maxi = self.return_total_and_max_weight()
+            pos = nx.circular_layout(self.graph)
+            count = 0
+            for c in com:
+                count = count + 1.
+                list_weight = [20. * float(self.graph[edge[0]][edge[1]]["weight"]) / float(maxi) for edge in c]
+                nx.draw_networkx_nodes(self.graph, pos, node_size=150, node_color='orange', alpha=0.3)
+                nx.draw_networkx_labels(self.graph, pos, font_size=10, font_family='sans-serif')
+                nx.draw_networkx_edges(self.graph, pos, edgelist=c, alpha=1., width=list_weight,
+                                       edge_color=colors[int(count)])
+                plt.show()
