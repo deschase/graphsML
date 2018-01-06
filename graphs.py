@@ -4,6 +4,13 @@ import community
 import numpy as np
 
 def get_associations(namefile):
+    """
+    This function read a correspondance file and returns a diccionnary that
+    associate every number with his associated character.
+    :param namefile: A string, the name of the csv file with the relation
+    between the characters and the number that will be used in the algorithm.
+    :return: A diccionnary associating a number with a name
+    """
     dico = {}
     with open(namefile, "rb") as f:
         list_lines = f.readlines()
@@ -19,6 +26,13 @@ def get_associations(namefile):
 
 
 def get_matrix(namefile):
+    """
+    This function read a matrix file and returns a matrix that gathers the
+    weights of the edges between all the nodes (representing characters) of
+    the data graph.
+    :param namefile: A string, the name of the csv file with the matix data.
+    :return: the weighted matrix of the graph encoded in the file.
+    """
     matrix = list()
     with open(namefile, "rb") as f:
         list_lines = f.readlines()
@@ -32,10 +46,20 @@ def get_matrix(namefile):
 
     return matrix
 
+
 class Graph_community(object):
-    """ This class is going to enable us to compute the directed (knowing the weight) and undirected (ignoring the weight)
-    line graph corresponding to a graph respresenting links between people"""
+    """
+    This class is going to enable us to compute the directed (knowing the weight) and undirected (ignoring the weight)
+    line graph corresponding to a graph respresenting links between people
+    """
+
     def __init__(self, tomes):
+        """
+        This function initalise the Graph_community object and gather the data
+        corrsponding to the tomes number given as arguments
+        :param tomes: list of the tomes you want to use (Int)
+        :return: An instance of the Graph_community object
+        """
         nam = str(tomes[0])
         for t in tomes[1:len(tomes)]:
             nam += "_" + str(t)
@@ -60,7 +84,11 @@ class Graph_community(object):
         self.E_sym = nx.Graph() # symmetric version of E (undirected)
 
     def draw_graph(self):
-        """ This function is going to draw the original graph """
+        """
+        This function is going to draw the original graph
+        :param tomes: None
+        :return: None
+        """
         graph_pos = nx.spring_layout(self.graph)
 
         # draw nodes, edges and labels
@@ -73,7 +101,11 @@ class Graph_community(object):
         plt.show()
 
     def draw_D(self):
-        """ This function is going to draw D"""
+        """
+        This function is going to draw the graph D (defined in the article)
+        :param tomes: None
+        :return: None
+        """
         graph_pos = nx.spring_layout(self.D)
 
         # draw nodes, edges and labels
@@ -86,7 +118,12 @@ class Graph_community(object):
         plt.show()
 
     def draw_E(self):
-        """ This function is going to draw E with arrows indicating their orientations"""
+        """
+        This function is going to draw E (defined in the article) with
+        arrows indicating their orientations
+        :param tomes: None
+        :return: None
+        """
         graph_pos = nx.spring_layout(self.E)
 
         # draw nodes, edges and labels
@@ -99,7 +136,11 @@ class Graph_community(object):
         plt.show()
 
     def compute_C(self):
-        """ Compute the simple line graph corespondant to the original graph"""
+        """
+        Compute the simple line graph corespondant to the original graph
+        :param tomes: None
+        :return: None
+        """
         list_edges = list(self.graph.edges)
         for link in list_edges:
             if link[0] != link[1]:
@@ -120,7 +161,11 @@ class Graph_community(object):
                     self.C.add_edge(nd, (ngbr2, extr2))
 
     def compute_E(self):
-        """Compute the exact directed graph described in the article"""
+        """
+        Compute the exact directed graph E described in the article
+        :param tomes: None
+        :return: None
+        """
         list_edges = list(self.graph.edges)
         for link in list_edges:
             if link[0] != link[1]: # check not self loop
@@ -162,7 +207,11 @@ class Graph_community(object):
                                         weight = float(wgt_alpha)/float(s[extr2] - wgt_beta))
 
     def symmetrize_E(self):
-        """ Create a symmetrized version of E"""
+        """
+        Create a symmetrized version of E
+        :param tomes: None
+        :return: None
+        """
         lg_node = list(self.E.nodes)
         for nd in lg_node: # we add the same nodes than in self.E
             self.E_sym.add_node(nd)
@@ -179,6 +228,11 @@ class Graph_community(object):
                 list_already_seen.append((extr1, extr2))
 
     def compute_D(self):
+        """
+        Compute the exact directed graph E described in the article
+        :param tomes: None
+        :return: None
+        """
         list_edges = list(self.graph.edges) #get the list of edges of the original graph
 
         for link in list_edges: # create the list of nodes of D (the edges of the original graph)
@@ -209,6 +263,17 @@ class Graph_community(object):
                             self.D.add_edge(nd, (ngbr2, extr2), weight = 1./(k2 -1))
 
     def return_total_and_max_weight(self, D= False, E=False):
+        """
+        Function that returns the maximum weight and the sum of all weights in
+        the graph. If D and E are False, the function will return the weights
+        of the original graph.
+        :param D: Boolean, True if you want the weights of the graph D
+                False (default)
+        :param E: Boolean, True if you want the weights of the graph E
+                False (default)
+        :return weight: the summ of all weights of the graphs.
+        :return maxi: the maximum of the weights of the graph.
+        """
         weight = 0
         maxi = 0.
         if E:
@@ -224,15 +289,25 @@ class Graph_community(object):
                 if self.D[e[0]][e[1]]["weight"] > maxi:
                     maxi = self.D[e[0]][e[1]]["weight"]
         else:
-            list_edges = list(self.graph.edges)
+            list_edges = list(selNonef.graph.edges)
             for e in list_edges:
                 weight +=self.graph[e[0]][e[1]]["weight"]
                 if self.graph[e[0]][e[1]]["weight"] > maxi:
                     maxi = self.graph[e[0]][e[1]]["weight"]
         return weight, maxi
 
-    def draw_graph_com(self, D, E, com = []):
-        """ This function is going to draw the original graph but with the community color obtained on it """
+    def draw_graph_com(self, D=False, E=False, com = []):
+        """
+        This function is going to draw the original graph but with the
+        community color obtained on it.
+        :param D: Boolean, True if you want the plot of the graph D
+                  False (default)
+        :param E: Boolean, True if you want the plot of the graph E
+                  False (default)
+        :param com: list of list of the edges belonging to a community.
+                    Default value: []
+        :return: None
+        """
         colors = ['blue', 'orange', 'purple', 'green', 'black', 'pink', 'brown',
                   'magenta', 'grey', 'cyan', 'blue', 'orange', 'purple',
                   'green', 'black', 'pink', 'brown', 'magenta', 'grey', 'cyan']

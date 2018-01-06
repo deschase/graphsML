@@ -40,16 +40,31 @@ def spectral_clustering(line_graph, lap_param):
     return label
 
 class Community_directed(object):
-    """ This class is going to represent a communtiy in the Louvain algorithm for directed graph"""
+    """ This class is going to represent a communtiy in the Louvain algorithm
+    for directed graph"""
     def __init__(self):
         self.nodes = [] # list of the nodes that belong to the community
         self.inner_graph = nx.DiGraph() # the inner graph of the community
 
     def is_empty(self):
+        """
+        Fubction that returns if the original graph is empty or not.
+        :return: Boolean returning the emptiness or not
+        """
         if self.nodes == []:
             return True
+        else:
+            return False
+
 
     def add_new_node(self, node, graph):
+        """
+        Function that adds a new node to the inner_graph.
+        :param node: node to add
+        :param graph: Graph from which we take the node to add (contains the
+        data about the edges we need to )
+        :return: None
+        """
         self.inner_graph.add_node(node) # we add the node to the inner graph
         list_neigh = graph.neighbors(node)
         for n in list_neigh:
@@ -59,6 +74,11 @@ class Community_directed(object):
         self.nodes.append(node) # we add the node to the list of nodes
 
     def remove_node(self, node):
+        """
+        Function that removes a node from the inner_graph.
+        :param node: node to remove
+        :return: None
+        """
         self.inner_graph.remove_node(node) # we remove the node from the inner graph
         self.nodes = [n for n in self.nodes if n!=node] # idem from the list of nodes
 
@@ -329,9 +349,3 @@ class Louvain_algorithm_directed(object):
             test = self.step1()
             print "beginning step 2"
             self.step2()
-
-
-
-
-
-
