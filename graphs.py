@@ -119,9 +119,9 @@ class Graph_community(object):
         # draw nodes, edges and labels
 
         # we can now added edge thickness and edge color
-        nx.draw_networkx_edges(self.D, graph_pos, width=0.1, alpha=0.1, edge_color='orange')
+        nx.draw_networkx_edges(self.D, graph_pos, width=1., alpha=0.1, edge_color='orange')
         nx.draw_networkx_nodes(self.D, graph_pos, node_size=100, node_color='blue', alpha=0.9)
-        nx.draw_networkx_labels(self.D, graph_pos, font_size=6, font_family='sans-serif')
+        nx.draw_networkx_labels(self.D, graph_pos, font_size=10, font_family='sans-serif')
 
         # show graph
         plt.show()
