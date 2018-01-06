@@ -179,7 +179,7 @@ class Stock_communities(object):
     def add_communities(self, list_com):
         """
         Add an element (diccionnary) in the stock of communites
-        :param list_com: the list of nodes in the community
+        :param list_com: the list of the communities.
         :return: None
         """
         dico = dict()
@@ -331,8 +331,7 @@ class Louvain_algorithm_directed(object):
     def get_neighbour_community(self, node):
         """
         Return the list of community in the neighbourhood of node
-        :param node: the node we want to know the communities of (the
-        communities of the edges linked to the node)
+        :param node: the node we want to know the communities of
         :return com_neigh: a list of the communities searched.
         """
         com_neigh = []
@@ -387,7 +386,7 @@ class Louvain_algorithm_directed(object):
     def step2(self):
         """
         We create a new graph with each community being a node, based on the
-        results of step 1. Step2 of the Louvain algorithm.
+        results of step 1. Step 2 of the Louvain algorithm.
         :return: None
         """
         # We sort the communities to keep only the nonempty one

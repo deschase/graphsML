@@ -59,7 +59,35 @@ In order to docommunity detection in the line graphs created we had use communit
 
 #### Louvain_algorithm_directed class
 
-The Louvain algorithm class
+The Louvain algorithm class is composed of the following attributes:
+-
+The functions of the class are the following:
+- compute_s() that computes the out-strength of the nodes in self.graph
+- compute_pi(num_simulations) that computes the principal eigenvector of the transition matrix
+- get_neighbour_community(node) that returns the communities of the neigbours of the node given as argument.
+- step1() step 1 of the Louvain algorithm, which select the different nodes to include in every community, according the modularities.
+- step2() step 2 of the Louvain algorithm, which create a new graph based on the previous step 1.
+- run_algo() function to launch the whole Louvain algorithm
+
+It uses other classes that were created in order to ease a bit the creation of the intermediate graphs created in the Louvain algorithm. The class Community_directed is there to be used during the step one of the Louvain algorithm for the management of the communities, and to make the calculations about the modularity. The class Stock_communities was used to keep track of the communities a each iteration of the Louvain algorithm, and keep the different layers of the community creation during the algorithm.
+Here is a detail of the class Community_directed.
+First the attributes of this class are:
+- self.nodes which is the list of the nodes that belong to the community encoded in the instace of the class
+- self.inner_graph which is a directed graph reprsenting the of the community, we can call it the inner graph.
+The different functions used in this class are the following:
+- is_empty() returns if the original graph is empty or not.
+- add_new_node(node, graph) adds a node to the graph
+- remove_node(node) which remove a node from the inner graph.
+- gain_adding(node, graph, pi_vector, s) which calculates the gain created when adding a node in the community.
+- gain_removing(node, graph, pi_vector, s) which calculates the gain created when removing a node from the community.
+- get_weight_from_community(community, graph) which returns the weights of the edges that goes from the community toward the graph given as argument.
+- get_weight_to_community(community, graph) which returns the weights of the edges that goes from the graph in argument toward the graph of the community.
+
+Here is a detail of the class Stock_communities. The only attribute of this class is self.stock that is a list of diccionnaries containing all the data about the communities created at each layer of the algorithm. The function of this class are
+- add_communities(list_com) that add the diccionnay containing all the data of the communities given in argument (list_com is a list of list, representing a gathering of communities).
+- plot_evolution_community() which plot the evolution of the communities during the steps of Louvain algorithm.
+- compute_total_community(level) that create the communities using Louvain algorithm at the step level wanted.
+- print_com() which print the evolution of the communities during the steps of Louvain algorithm.
 
 ## Motivation
 
@@ -78,3 +106,9 @@ More generally, this project was done for the cours "Graphs in Machine Learning"
 http://researchers.lille.inria.fr/~valko/hp/ .
 
 ## Use of the code
+
+In order to use the code, you first have to create the data files if they are not cerated yet.
+Then you have to enter the list of tomes you wanted to in the main file (the tome_list variable).
+Just launch
+"python main.py"
+to get the results. 
