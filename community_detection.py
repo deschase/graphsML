@@ -237,6 +237,7 @@ class Louvain_algorithm_directed(object):
         # Ideally choose a random vector
         # To decrease the chance that our vector
         # Is orthogonal to the eigenvector
+        follow =  []
         b_k = np.random.rand(W.shape[0]).reshape([W.shape[0], 1])
 
 
@@ -249,10 +250,12 @@ class Louvain_algorithm_directed(object):
 
             # re normalize the vector
             b_k = b_k1 / b_k1_norm
+            follow.append(b_k1)
         i = 0
         for n in list(self.graph.nodes):
             self.pi_vector[n] = np.asscalar(b_k[i])
             i+=1
+        return follow
 
     def get_neighbour_community(self, node):
         """ Return the list of community in the neighbourhood of node"""
