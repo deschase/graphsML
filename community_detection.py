@@ -5,9 +5,17 @@ import numpy as np
 from sklearn.cluster import KMeans
 #from networkx import graphviz_layout
 
-def spectral_clustering(line_graph, lap_param):
-    """ Apply a spectral clustering on line_graph following the lap_param = "rw", "unn" or "sym" """
-    W = nx.to_numpy_matrix(line_graph)
+def spectral_clustering(graph, lap_param):
+    """
+    Apply a spectral clustering on the graph.
+    :param graph: The graph we want to do the clustering on.
+    :param lap_param: string "rw", "unn" or "sym". The type of laplacian matrix
+    we want to create. "rw" for the random walker Laplacian, "unn"for
+    unnormalized Laplacian and "sym" for symmetric Laplacian
+    """
+
+    # Creation of the laplacian matrix.
+    W = nx.to_numpy_matrix(graph)
     diago = np.diag(np.diag(W))
     if lap_param == "unn":
         L = np.subtract(diago, W)
@@ -16,20 +24,26 @@ def spectral_clustering(line_graph, lap_param):
     elif lap_param == "rw":
         L = np.linalg.inv(diago).dot(np.subtract(diago, W))
 
+    # Calculation, sorting and selection of the eigenvectors.
     eigenvalues, eigenvectors = np.linalg.eig(L)
     sort = np.argsort(eigenvalues)
     nbselected = 30
     eigenval_selected = [eigenvalues[sort[i]] for i in range(nbselected)]
     print eigenval_selected
-    indbig = 1
-    maxi = 0
-    for k in range(nbselected - 1):
-        val = abs(eigenval_selected[k + 1] - eigenval_selected[k])
-        if (maxi <= val):
-            indbig = k
-            maxi = val
-    print indbig
-    print maxi
+
+    # # selection of the meaningful eigenvectors (eigengap method)
+    # indbig = 1
+    # maxi = 0
+    # for k in range(nbselected - 1):
+    #     val = abs(eigenval_selected[k + 1] - eigenval_selected[k])
+    #     if (maxi <= val):
+    #         indbig = k
+    #         maxi = val
+    # print indbig
+    # print maxi
+
+    # Creation of the communities with the selected eigenvectors.
+    # Use of K-means to detect the communities.
     indbig = 10
     eigen_vector_selected = eigenvectors[sort[0]]
     for i in range(1, indbig + 1):
@@ -43,6 +57,9 @@ class Community_directed(object):
     """ This class is going to represent a communtiy in the Louvain algorithm
     for directed graph"""
     def __init__(self):
+        """
+        Initialisation of the class.
+        """
         self.nodes = [] # list of the nodes that belong to the community
         self.inner_graph = nx.DiGraph() # the inner graph of the community
 
@@ -84,6 +101,8 @@ class Community_directed(object):
 
     def gain_adding(self, node, graph, pi_vector, s):
         """
+        Function that calculates the modularity gain from adding a node in the
+        graph
         :param node: node to test
         :param graph: original graph we are applying louvain algo on
         :param pi_vector: dominant eigenvector of transition matrix E/sout (as dictionnary)
@@ -100,6 +119,8 @@ class Community_directed(object):
 
     def gain_removing(self, node, graph, pi_vector, s):
         """
+        Function that calculates the modularity gain from removing a node in the
+        graph
         :param node: node to test
         :param graph: original graph we are applying louvain algo on
         :param pi_vector: dominant eigenvector of transition matrix E/sout (as dictionnary)
@@ -114,7 +135,14 @@ class Community_directed(object):
         return gain
 
     def get_weight_from_community(self, community, graph):
-        """ Return weight of edges to community from self"""
+        """
+        Return weight of edges from self to community
+        :param community: community we want to calculate the weights of the
+        links with self (directed toward community)
+        :param graph: General graph, the original graph used for community
+        detection
+        :return weight: weight of the community
+        """
         weight = 0
         list_edges = list(graph.edges)
         for n1 in self.nodes:
@@ -124,7 +152,14 @@ class Community_directed(object):
         return weight
 
     def get_weight_to_community(self, community, graph):
-        """ Return weight of edges from community to self"""
+        """
+        Return weight of edges from community to self
+        :param community: community we want to calculate the weights of the
+        links with self (directed toward self)
+        :param graph: General graph, the original graph used for community
+        detection
+        :return weight: weight of the community
+        """
         weight = 0
         list_edges = list(graph.edges)
         for n1 in self.nodes:
@@ -135,17 +170,29 @@ class Community_directed(object):
 
 
 class Stock_communities(object):
-    """ Class to stock layers of communities and compute the real global communities"""
+    """
+    Class to stock layers of communities and compute the real global communities
+    """
     def __init__(self):
         self.stock = []
 
     def add_communities(self, list_com):
+        """
+        Add an element (diccionnary) in the stock of communites
+        :param list_com: the list of the communities.
+        :return: None
+        """
         dico = dict()
         for i in range(len(list_com)):
             dico[str(i)] = list_com[i]
         self.stock.append(dico)
 
     def plot_evolution_community(self):
+        """
+        Plot all the layers of community created by the Louvain algorithm.
+        Communities are in blue, the nodes of the original graph are in red.
+        :return: None
+        """
         G = nx.Graph()
         for i in range(len(self.stock)):
             for j in self.stock[i].keys():
@@ -168,16 +215,25 @@ class Stock_communities(object):
         label = dict()
         for n in real_list:
             label[n]= n
-        nx.draw_networkx_nodes(G,pos,nodelist=real_list, node_color = "red", nodesize = 20, alpha = 0.3)
-        nx.draw_networkx_nodes(G,pos, nodelist = list_ignore, node_color = "blue", alpha=0.3)
-        nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif', labels=label)
+        nx.draw_networkx_nodes(G,pos,nodelist=real_list, node_color = "red",
+                               nodesize = 20, alpha = 0.3)
+        nx.draw_networkx_nodes(G,pos, nodelist = list_ignore,
+                               node_color = "blue", alpha=0.3)
+        nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif',
+                                labels=label)
         nx.draw_networkx_edges(G, pos, width=1, alpha=0.3, edge_color='b')
         plt.axis('equal')
         plt.show()
 
     def compute_total_community(self, level):
+        """
+        Return the community created by Louvain algorithm at the level wanted
+        (0 is the first level).
+        :param level: Int, level of the algorithm wanted
+        :return: list of the nodes in the communities at teh level wanted.
+        """
         if level >= len(self.stock):
-            return "nope"
+            return []
         else:
             nbCom = len(self.stock[level].keys())
             com = [[] for i in range(nbCom)]
@@ -194,9 +250,11 @@ class Stock_communities(object):
                     new_com = [[] for i in range(nbCom)]
             return com
 
-
-
     def print_com(self):
+        """
+        Print all the layers of community created by the Louvain algorithm.
+        :return: None
+        """
         for j in range(len(self.stock)):
             for i in self.stock[j].keys():
                 print i
@@ -204,9 +262,17 @@ class Stock_communities(object):
 
 
 class Louvain_algorithm_directed(object):
+    """
+    Class that performs the Louvain algorithm on directed graphs.
+    """
+
     def __init__(self, graph):
+        """
+        Initialization of the class
+        """
         self.list_communities = [] # actual list of communities
-        self.correspondance = dict() # actual correspondance between node of the graph and community
+        self.correspondance = dict() # actual correspondance between node of the
+        #graph and community
         self.graph = graph
         i = 0
         for n in list(graph.nodes):
@@ -216,10 +282,16 @@ class Louvain_algorithm_directed(object):
             self.correspondance[n] = i
             i+=1
         self.memory = Stock_communities()
-        self.pi_vector = dict() # is going to contain the main eignevector of the transition matrix corresponding to self.graph
-        self.s = dict() # is going to contain the sum on beta of A(alpha,beta) with A the adjacecy matrix of self.graph
+        self.pi_vector = dict() # is going to contain the main eignevector of
+        # the transition matrix corresponding to self.graph
+        self.s = dict() # is going to contain the sum on beta of A(alpha,beta)
+        # with A the adjacecy matrix of self.graph
 
     def compute_s(self):
+        """
+        Function that computes the out-strength of the nodes in self.graph.
+        :return: None
+        """
         for n in list(self.graph.nodes):
             list_neigh = self.graph.neighbors(n)
             for n2 in list_neigh:
@@ -229,7 +301,11 @@ class Louvain_algorithm_directed(object):
                     self.s[n] += self.graph[n2][n]["weight"]
 
     def compute_pi(self, num_simulations):
-        """ Use power method to compute pi"""
+        """
+        Use power method to compute pi (eigenvector)
+        :param num_simulations: The number of times we iterate the power process
+        :return: None
+        """
         W = nx.to_numpy_matrix(self.graph)
         # We compute the transition matrix
         for j in range(W.shape[1]):
@@ -244,13 +320,12 @@ class Louvain_algorithm_directed(object):
         for _ in range(num_simulations):
             # calculate the matrix-by-vector product Ab
             b_k1 = np.dot(W, b_k)
-
             # calculate the norm
             b_k1_norm = np.linalg.norm(b_k1)
-
-            # re normalize the vector
+            # renormalize the vector
             b_k = b_k1 / b_k1_norm
             follow.append(b_k1)
+
         i = 0
         for n in list(self.graph.nodes):
             self.pi_vector[n] = np.asscalar(b_k[i])
@@ -258,7 +333,11 @@ class Louvain_algorithm_directed(object):
         return follow
 
     def get_neighbour_community(self, node):
-        """ Return the list of community in the neighbourhood of node"""
+        """
+        Return the list of community in the neighbourhood of node
+        :param node: the node we want to know the communities of
+        :return com_neigh: a list of the communities searched.
+        """
         com_neigh = []
         list_neigh = self.graph.neighbors(node)
         for n in list_neigh:
@@ -268,7 +347,12 @@ class Louvain_algorithm_directed(object):
 
 
     def step1(self):
-        """ We try each node to see if te modularity can be increased"""
+        """
+        We try each node to see if the modularity can be increased. The first
+        step in the Louvain algorithm
+        :return test_total: Boolean To know if there was any change during the
+        step (to know if we can stop Louvain algorithm).
+        """
         print "entering step 1"
         test_total = False
         still_increasing = True
@@ -304,7 +388,11 @@ class Louvain_algorithm_directed(object):
         return test_total
 
     def step2(self):
-        """ We create a new graph with each community being a node"""
+        """
+        We create a new graph with each community being a node, based on the
+        results of step 1. Step 2 of the Louvain algorithm.
+        :return: None
+        """
         # We sort the communities to keep only the nonempty one
         print "entering step 2"
         final_list = []
@@ -321,14 +409,17 @@ class Louvain_algorithm_directed(object):
         for i in range(len(final_list)):
             for j in range(len(final_list)):
                 if i!=j:
-                    w = final_list[i].get_weight_from_community(final_list[j], self.graph) #we calculate the total weight from i to j
+                    w = final_list[i].get_weight_from_community(final_list[j],
+                                                                self.graph)
+                    # we calculate the total weight from i to j
                     if w > 0:
                         temp.add_edge(str(i), str(j), weight = w)
         print "new graph created"
         # we reinitialize all the variables
         self.graph = temp
         self.list_communities = []  # actual list of communities
-        self.correspondance = dict()  # actual correspondance between node of the graph and community
+        self.correspondance = dict()  # actual correspondance between node of
+        # the graph and community
         i = 0
         for n in list(self.graph.nodes):
             c = Community_directed()
@@ -337,15 +428,25 @@ class Louvain_algorithm_directed(object):
             self.correspondance[n] = i
             i += 1
         print "new values created"
-        self.pi_vector = dict()  # is going to contain the main eignevector of the transition matrix corresponding to self.graph
-        self.s = dict()  # is going to contain the sum on beta of A(alpha,beta) with A the adjacecy matrix of self.graph
+        self.pi_vector = dict()  # is going to contain the main eignevector of
+        # the transition matrix corresponding to self.graph
+        self.s = dict()  # is going to contain the sum on beta of A(alpha,beta)
+        # with A the adjacecy matrix of self.graph
 
     def run_algo(self, num_simulation):
+        """
+        Run the Louvain algorithm, alternating step 1 and step 2 until the
+        results get stable.
+        :param num_simulation: Int, number of time we want to launch the power
+        algorithm to get the eigenvector pi
+        :return: None
+        """
         test = True
         i = 0
         while test:
             print "running", i
             i+=1
+            # Calculations usefull for the modularity.
             self.compute_s()
             self.compute_pi(num_simulation)
             print "beginning step 1"
